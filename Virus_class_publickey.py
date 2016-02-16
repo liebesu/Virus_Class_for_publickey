@@ -21,7 +21,7 @@ lock=threading.Lock()
     lists=os.listdir(md5filedir)
     for list in lists:'''
 
-
+global allkey
 
 
 class VTAPI():
@@ -68,10 +68,17 @@ def readMd5file():
             i = 0'''
 def readkey():
     keyfiledir=os.path.join(VTAPIKEY,publickey)
+    allkey=open(keyfiledir,"r").readlines()
+    allkey=[key.replace('\n','').replace('\r','') for key in allkey]
+    keynum=len(allkey)
+
+
+
+    return keynum,allkey
 
 def parsemd5(md5):
-    apikey=key
-    parse(vt.getReport(md5,apikey),md5)
+    for apikey in allkey:
+        parse(vt.getReport(md5,apikey),md5)
 
 
 def parse(it, md5):
@@ -347,7 +354,8 @@ def MD5():
 if __name__ == "__main__":
     vt=VTAPI()
     allmd5=MD5()
-    pool = Pool(processes=250)
+    keynum=readkey()
+    pool = Pool(processes=keynum)
     pool.map(parsemd5(), allmd5)
     pool.close()
     pool.join()
