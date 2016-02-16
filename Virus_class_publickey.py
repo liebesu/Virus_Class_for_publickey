@@ -30,7 +30,7 @@ class VTAPI():
         self.base = 'https://www.virustotal.com/vtapi/v2/'
     def getReport(self,md5,apikey):
         param = {'resource':md5,'apikey':apikey}
-        url = self.base + "file/rescan"
+        url = self.base + "file/report"
         data = urllib.urlencode(param)
         try:
             result = urllib2.urlopen(url,data)
