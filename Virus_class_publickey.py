@@ -7,9 +7,11 @@ import MySQLdb
 from pprint import pprint
 from lib.core.readcnf import read_conf
 from lib.core.constants import ROOTPATH,VTAPIKEY,JSONPATH
-inputpath,outputpath,Scantype,datebaseip,datebaseuser,datebasepsw,datebasename,datebasetable,md5filename=read_conf()
-
-
+from multiprocessing import Pool
+inputpath,outputpath,Scantype,datebaseip,datebaseuser,datebasepsw,datebasename,datebasetable,md5filename,publickey=read_conf()
+import threading
+import time
+lock=threading.Lock()
 '''def check():
     if scantype=="md5":'''
 
@@ -30,44 +32,47 @@ class VTAPI():
         param = {'resource':md5,'apikey':apikey}
         url = self.base + "file/report"
         data = urllib.urlencode(param)
-        result = urllib2.urlopen(url,data)
-        jdata =  json.loads(result.read())
-        return jdata
-    def rescan(self,md5):
-        param = {'resource':md5,'apikey':self.api}
-        url = self.base + "file/rescan"
-        data = urllib.urlencode(param)
-        result = urllib2.urlopen(url,data)
-        print "\n\tVirus Total Rescan Initiated for -- " + md5 + " (Requery in 10 Mins)"
+        try:
+            result = urllib2.urlopen(url,data)
+            jdata =  json.loads(result.read())
+            return jdata
+        except :
+            time.sleep(5)
+            result = urllib2.urlopen(url,data)
+            jdata =  json.loads(result.read())
+            return jdata
+
 def readMd5file():
+    '''apikey=''
     count = 0
     i = 0
-    t = 0
-    keyfiles=os.listdir(VTAPIKEY)
+    t = 0'''
+    '''keyfiles=os.listdir(VTAPIKEY)
     for keyfile in keyfiles:
         ApikeyList = os.path.join(VTAPIKEY,keyfile)
         ApikeyList_object = open(ApikeyList, "r").readlines()
-        Apikeycount = len(ApikeyList_object)
-        md5filedir = os.path.join(ROOTPATH,"md5file")
-        allmd5file=os.path.join(md5filedir,md5filename)
-        allmd5=open(allmd5file,"r").readlines()
-        for md5 in allmd5:
-            md5 = md5.replace('\n','').replace('\r', '')
-            if re.match(r"([a-fA-F\d]{32})", md5) != None:
-                count = count+1
-                apikey=ApikeyList_object[i].replace('\n','').replace('\r', '')
-                if count % 4 == 0:
-                    i=i+1
-                    apikey = ApikeyList_object[i].replace('\n','').replace('\r', '')
-                    Apikeycount1=Apikeycount-1
-                    if i >= Apikeycount1:
-                        t = t+1
-                        i = 0
+        Apikeycount = len(ApikeyList_object)'''
+    md5filedir = os.path.join(ROOTPATH,"md5file")
+    allmd5file=os.path.join(md5filedir,md5filename)
+    allmd5=open(allmd5file,"r").readlines()
+    allmd5=[md5.replace('\n', '').replace('\r', '') for md5 in allmd5]
+    return allmd5
+    #count = count+1
+    #apikey=ApikeyList_object[i].replace('\n','').replace('\r', '')
+    '''if count % 4 == 0:
+        i=i+1
+        apikey = ApikeyList_object[i].replace('\n','').replace('\r', '')
+        Apikeycount1=Apikeycount-1
+        if i >= Apikeycount1:
+            t = t+1
+            i = 0'''
+def readkey():
+    keyfiledir=os.path.join(VTAPIKEY,publickey)
 
-                parse(vt.getReport(md5,apikey),md5)
-                cmd="sed -i '1d' "+allmd5file
-                os.system(cmd)
-                #removeLine(allmd5file,md5)
+def parsemd5(md5):
+    apikey=key
+    parse(vt.getReport(md5,apikey),md5)
+
 
 def parse(it, md5):
     md5filedir = os.path.join(ROOTPATH,"md5file")
@@ -319,71 +324,34 @@ def parse(it, md5):
     cmd="sed -i '/"+md5+"/d' "+allmd5file
     os.system(cmd)
     lock.release()'''
+def MD5():
+    db = MySQLdb.connect(datebaseip,datebaseuser,datebasepsw,datebasename)
+    cursor = db.cursor()
 
-def removeLine(filename, lineno):
-    fro = open(filename, "rb")
-
-    current_line = 0
-    while current_line < lineno:
-        fro.readline()
-        current_line += 1
-
-    seekpoint = fro.tell()
-    frw = open(filename, "r+b")
-    frw.seek(seekpoint, 0)
-
-    # read the line we want to discard
-    fro.readline()
-
-    # now move the rest of the lines in the file
-    # one line back
-    chars = fro.readline()
-    while chars:
-        frw.writelines(chars)
-        chars = fro.readline()
-
-    fro.close()
-    frw.truncate()
-    frw.close()
-'''def useVtkey():
-    count = 0
-    i = 0
-    t = 0
-    ApikeyList = VTAPIKEY+os.path.basename(VTAPIKEY)
-    ApikeyList_object = open(ApikeyList, "r").readlines()
-    Apikeycount = len(ApikeyList_object)
-    TargetList = rootpath+'filepath.txt'
-    TargetFile_object = open(TargetList, "r").readlines()
-    for eachline in TargetFile_object:
-        eachline = eachline.replace('\n','').replace('\r', '')
-        filename = eachline.split('/')[-1]
-        count=count+1
-        apikey=ApikeyList_object[i].replace('\n','').replace('\r', '')
-        if count % 4 == 0:
-            i=i+1
-            apikey = ApikeyList_object[i].replace('\n','').replace('\r', '')
-            Apikeycount1=Apikeycount-1
-            print '********   use    ' + str(i) + "    key**********"
-            print "                  "
-            if i >= Apikeycount1:
-                runtime[t] = datetime.datetime.now()
-                if t >= 1:
-                    print (runtime[t] - runtime[t-1]).seconds
-                    print "seconds                                                    LIEBESU"
-
-                t = t+1
-                i = 0
-        print apikey
-        apikey = str(apikey)
-
-'''
-
-'''def virustotalscan():
-        md5'''
+    tmpmd5file='/tmp/tmpmd5'
+    if os.path.exists(tmpmd5file):
+        os.remove(tmpmd5file)
+    md5sql='select Md5 from '+datebasetable+' into outfile '+'"'+tmpmd5file+'"'
+    cursor.execute(md5sql)
+    db.commit()
+    cursor.close()
+    db.close()
+    md5filedir = os.path.join(ROOTPATH,"md5file")
+    allmd5file=os.path.join(md5filedir,md5filename)
+    os.system('cat '+tmpmd5file+" "+allmd5file +" |sort | uniq -u > md5file/tmp")
+    newmd5file=os.path.join(md5filedir,'tmp')
+    newmd5=open(newmd5file,"r").readlines()
+    newmd5=[md5.replace('\n', '').replace('\r', '') for md5 in newmd5]
+    print len(newmd5)
+    return newmd5
 if __name__ == "__main__":
     vt=VTAPI()
-    md5=readMd5file()
-
+    allmd5=MD5()
+    pool = Pool(processes=250)
+    pool.map(parsemd5(), allmd5)
+    pool.close()
+    pool.join()
+    print "finish"
 
 
 
