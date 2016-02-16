@@ -30,7 +30,7 @@ class VTAPI():
         self.base = 'https://www.virustotal.com/vtapi/v2/'
     def getReport(self,md5,apikey):
         param = {'resource':md5,'apikey':apikey}
-        url = self.base + "file/report"
+        url = self.base + "file/rescan"
         data = urllib.urlencode(param)
         try:
             result = urllib2.urlopen(url,data)
@@ -71,14 +71,22 @@ def readkey():
     allkey=open(keyfiledir,"r").readlines()
     allkey=[key.replace('\n','').replace('\r','') for key in allkey]
     keynum=len(allkey)
-
-
-
     return keynum,allkey
 
-def parsemd5(md5):
+
+
+    return keynum
+
+def parsemd5(apikey,md5):
+    starttime=time.time()
     for apikey in allkey:
-        parse(vt.getReport(md5,apikey),md5)
+            parse(vt.getReport(md5,apikey),md5)
+    cell=int(time.time()-starttime)
+    if cell <=60:
+        time.sleep(60-cell)
+
+
+
 
 
 def parse(it, md5):
@@ -354,9 +362,9 @@ def MD5():
 if __name__ == "__main__":
     vt=VTAPI()
     allmd5=MD5()
-    keynum=readkey()
+    keynum,allkey=readkey()
     pool = Pool(processes=keynum)
-    pool.map(parsemd5(), allmd5)
+    pool.map(parsemd5(), allkey)
     pool.close()
     pool.join()
     print "finish"
