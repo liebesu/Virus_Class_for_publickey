@@ -79,8 +79,8 @@ def readkey():
 
 def parsemd5(apikey,md5):
     starttime=time.time()
-    for apikey in allkey:
-            parse(vt.getReport(md5,apikey),md5)
+
+    parse(vt.getReport(md5,apikey),md5)
     cell=int(time.time()-starttime)
     if cell <=60:
         time.sleep(60-cell)
@@ -364,7 +364,7 @@ if __name__ == "__main__":
     allmd5=MD5()
     keynum,allkey=readkey()
     pool = Pool(processes=keynum)
-    pool.map(parsemd5(), allkey)
+    pool.map(parsemd5, allkey,allmd5)
     pool.close()
     pool.join()
     print "finish"
