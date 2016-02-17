@@ -7,7 +7,8 @@ import MySQLdb
 from pprint import pprint
 from lib.core.readcnf import read_conf
 from lib.core.constants import ROOTPATH,VTAPIKEY,JSONPATH
-from multiprocessing import Pool
+from multiprocessing import Pool, Queue
+
 inputpath,outputpath,Scantype,datebaseip,datebaseuser,datebasepsw,datebasename,datebasetable,md5filename,publickey=read_conf()
 import threading
 import time
@@ -72,10 +73,6 @@ def readkey():
     allkey=[key.replace('\n','').replace('\r','') for key in allkey]
     keynum=len(allkey)
     return keynum,allkey
-
-
-
-    return keynum
 
 def parsemd5(key,md5):
     starttime=time.time()
@@ -362,13 +359,16 @@ def MD5():
 if __name__ == "__main__":
     vt=VTAPI()
     allmd5=MD5()
+
     keynum,allkey=readkey()
-    print allkey,keynum
 
     pool = Pool(processes=keynum)
-    pool.map(parsemd5,allkey,allmd5)
-    pool.close()
-    pool.join()
+    for key in allkey:
+        for i in range(4):
+            print key
+            pool.map(parsemd5,key,allmd5)
+            pool.close()
+            pool.join()
     print "finish"
 
 
