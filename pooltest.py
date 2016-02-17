@@ -5,8 +5,9 @@ def f(i,j):
     print 'hello world', i,j
 
 
+
 if __name__ == '__main__':
-
-
-    for num in range(10):
-        Process(target=f, args=( num,num)).start()
+    a=[1,2,3]
+    b=[4,5,6]
+    c=extend(a,b)
+    print c

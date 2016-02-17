@@ -66,10 +66,12 @@ def readkey():
     allkey=[key.replace('\n','').replace('\r','') for key in allkey]
     keynum=len(allkey)
     return keynum,allkey
-def parsemd5(key,md5):
+def parsemd5(md5,n):
+    keynum,allkey=readkey()
+
     starttime=time.time()
 
-    parse(vt.getReport(md5,key),md5)
+    parse(vt.getReport(md5,allkey[n]),md5)
     cell=int(time.time()-starttime)
     if cell <=60:
         time.sleep(60-cell)
@@ -347,17 +349,11 @@ if __name__ == "__main__":
     vt=VTAPI()
     allmd5=MD5()
     keynum,allkey=readkey()
-    for key in allkey:
-        p=Process(target=parsemd5,args=(allkey,allmd5))
-        p.start()
-        p.join()
 
-
-
-    pool = Pool(processes=keynum)
-    pool.map(parsemd5,allkey)
-    pool.close()
+    pool = Pool(processes=keynum*4)
+    pool.apply_async(parsemd5,allmd5,range[keynum])
     pool.join()
+    pool.close()
     print "finish"
 
 
