@@ -4,23 +4,17 @@ import urllib2
 import json
 import re,datetime,os
 import MySQLdb
+import Queue
 from pprint import pprint
 from lib.core.readcnf import read_conf
-from lib.core.constants import ROOTPATH,VTAPIKEY,JSONPATH
-from multiprocessing import Pool, Queue
-
+from lib.core.constants import ROOTPATH,VTAPIKEY
+from multiprocessing import Pool, Process
+from functools import partial
 inputpath,outputpath,Scantype,datebaseip,datebaseuser,datebasepsw,datebasename,datebasetable,md5filename,publickey=read_conf()
 import threading
 import time
 lock=threading.Lock()
-'''def check():
-    if scantype=="md5":'''
 
-
-'''def checkMd5file():
-
-    lists=os.listdir(md5filedir)
-    for list in lists:'''
 
 global allkey
 
@@ -42,7 +36,6 @@ class VTAPI():
             result = urllib2.urlopen(url,data)
             jdata =  json.loads(result.read())
             return jdata
-
 def readMd5file():
     '''apikey=''
     count = 0
@@ -73,7 +66,6 @@ def readkey():
     allkey=[key.replace('\n','').replace('\r','') for key in allkey]
     keynum=len(allkey)
     return keynum,allkey
-
 def parsemd5(key,md5):
     starttime=time.time()
 
@@ -81,11 +73,6 @@ def parsemd5(key,md5):
     cell=int(time.time()-starttime)
     if cell <=60:
         time.sleep(60-cell)
-
-
-
-
-
 def parse(it, md5):
     md5filedir = os.path.join(ROOTPATH,"md5file")
     allmd5file=os.path.join(md5filedir,md5filename)
@@ -359,16 +346,18 @@ def MD5():
 if __name__ == "__main__":
     vt=VTAPI()
     allmd5=MD5()
-
     keynum,allkey=readkey()
+    for key in allkey:
+        p=Process(target=parsemd5,args=(allkey,allmd5))
+        p.start()
+        p.join()
+
+
 
     pool = Pool(processes=keynum)
-    for key in allkey:
-        for i in range(4):
-            print key
-            pool.map(parsemd5,key,allmd5)
-            pool.close()
-            pool.join()
+    pool.map(parsemd5,allkey)
+    pool.close()
+    pool.join()
     print "finish"
 
 
