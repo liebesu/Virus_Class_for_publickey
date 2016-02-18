@@ -74,7 +74,7 @@ def parsemd5(n):
 
     if int(cell) <=60:
         time.sleep(60-int(cell))
-        
+
 def parse(it, md5):
     md5filedir = os.path.join(ROOTPATH,"md5file")
     allmd5file=os.path.join(md5filedir,md5filename)
@@ -349,11 +349,11 @@ if __name__ == "__main__":
     vt=VTAPI()
     allmd5=MD5()
     keynum,allkey=readkey()
-
-    pool = Pool(processes=keynum*4)
-    pool.map(parsemd5,range(len(allmd5)))
-    pool.join()
-    pool.close()
+    if allmd5 :
+        pool = Pool(processes=keynum*4)
+        pool.map(parsemd5,range(len(allmd5)))
+        pool.join()
+        pool.close()
     print "finish"
 
 
