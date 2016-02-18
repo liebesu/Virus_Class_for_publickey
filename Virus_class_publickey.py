@@ -67,15 +67,14 @@ def readkey():
 def parsemd5(n):
     keynum,allkey=readkey()
     md5num=n%(keynum*4)
-    print md5num
     foallkey=allkey*4
-    print len(foallkey)
     starttime=time.time()
-
     parse(vt.getReport(allmd5[n],foallkey[md5num]),allmd5[n])
-    cell=int(time.time()-starttime)
-    if cell <=60:
-        time.sleep(60-cell)
+    cell=time.time()-starttime
+
+    if int(cell) <=60:
+        time.sleep(60-int(cell))
+        print "cell:",cell
 def parse(it, md5):
     md5filedir = os.path.join(ROOTPATH,"md5file")
     allmd5file=os.path.join(md5filedir,md5filename)
