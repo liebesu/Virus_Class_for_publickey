@@ -74,7 +74,7 @@ def parsemd5(n):
 
     if int(cell) <=60:
         time.sleep(60-int(cell))
-        print "cell:",cell
+        
 def parse(it, md5):
     md5filedir = os.path.join(ROOTPATH,"md5file")
     allmd5file=os.path.join(md5filedir,md5filename)
