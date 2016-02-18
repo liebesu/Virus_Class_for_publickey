@@ -2,10 +2,8 @@ __author__ = 'liebesu'
 import urllib
 import urllib2
 import json
-import re,datetime,os
+import datetime,os
 import MySQLdb
-import Queue
-from pprint import pprint
 from lib.core.readcnf import read_conf
 from lib.core.constants import ROOTPATH,VTAPIKEY
 from multiprocessing import Pool, Process
@@ -17,7 +15,7 @@ lock=threading.Lock()
 
 
 global allkey
-
+global allmd5
 
 class VTAPI():
 
@@ -66,12 +64,15 @@ def readkey():
     allkey=[key.replace('\n','').replace('\r','') for key in allkey]
     keynum=len(allkey)
     return keynum,allkey
-def parsemd5(md5,n):
+def parsemd5(n):
     keynum,allkey=readkey()
-
+    md5num=n%(keynum*4)
+    print md5num
+    foallkey=allkey*4
+    print len(foallkey)
     starttime=time.time()
 
-    parse(vt.getReport(md5,allkey[n]),md5)
+    parse(vt.getReport(allmd5[n],foallkey[md5num]),allmd5[n])
     cell=int(time.time()-starttime)
     if cell <=60:
         time.sleep(60-cell)
@@ -351,7 +352,7 @@ if __name__ == "__main__":
     keynum,allkey=readkey()
 
     pool = Pool(processes=keynum*4)
-    pool.apply_async(parsemd5,allmd5,range[keynum])
+    pool.map(parsemd5,range(len(allmd5)))
     pool.join()
     pool.close()
     print "finish"
