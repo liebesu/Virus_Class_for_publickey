@@ -29,6 +29,10 @@ class VTAPI():
             result = urllib2.urlopen(url,data)
             jdata =  json.loads(result.read())
             return jdata
+            a=open("jsontest","a")
+            a.write(jdata)
+            a.close()
+            sys.exit()
         except :
             time.sleep(5)
             result = urllib2.urlopen(url,data)
@@ -350,7 +354,7 @@ if __name__ == "__main__":
     allmd5=MD5()
     keynum,allkey=readkey()
     if allmd5 :
-        pool = Pool(processes=keynum*4)
+        pool = Pool(processes=1)
         pool.map(parsemd5,range(len(allmd5)))
         pool.join()
         pool.close()
