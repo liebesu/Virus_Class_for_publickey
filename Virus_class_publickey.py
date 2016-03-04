@@ -354,10 +354,12 @@ if __name__ == "__main__":
     allmd5=MD5()
     keynum,allkey=readkey()
     if allmd5 :
-        pool = Pool(processes=1)
+        '''pool = Pool(processes=1)
         pool.map(parsemd5,range(len(allmd5)))
         pool.join()
-        pool.close()
+        pool.close()'''
+        for md5 in range(len(allmd5)):
+            parsemd5(md5)
     print "finish"
 
 
